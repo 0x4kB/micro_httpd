@@ -75,7 +75,7 @@ const char mimetypes_ext_len[] ={
 // return enum value of _mime ( png, image_png, markdown, text_markdown, .. )
 #define MIMETYPE(_type) ({ _MIME_ENUM; _type; })
 
-// return a pointer to the mimetype (no check of bounds)
+// return a pointer to a mimetype str (no check of bounds)
 #define MIMESTR(_mimetype) ({ _MIME_ENUM; char buf[32]; mimetype_str( buf, _mimetype); buf; })
 
 
