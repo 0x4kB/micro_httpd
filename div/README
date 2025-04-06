@@ -7,6 +7,8 @@ mimetypes.
 mime.types is from apache,
 mime.csv from some gist I cannot find just now.
 
+mime.cvs.1 https://gist.github.com/jimschubert/94894c938d8f9f64c6863b28c70a22cc/raw/5b17acd7926bc40909563d14c32c201d7808eaa3/mime.csv
+
 convert.pl: convert arg1 into mimetypes.h
 (old, would need to be changed)
 
