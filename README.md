@@ -3,7 +3,7 @@
 
 
 
-A minimalistic http 1.0 webserver, statically linked below 4kB.
+A minimalistic http 1.0 webserver, statically linked 3864Bytes.
 
 Capable to serve directory listings and convert markdown files
 on the fly via 'lowdown'.
