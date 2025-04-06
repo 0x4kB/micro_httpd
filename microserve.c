@@ -257,7 +257,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = HTONS16(port); // 0xa00f; // port 4000, htons(4000)
+	address.sin_port = HTONS16(port); // 0xa00f; // port 4000
 
 	int r;
 	ulong l = 1;
@@ -270,7 +270,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		err(r,"binding socket" );
 	}
 
-	eprintsl("serve at port ",argv[2],", root: ", buf );
+	eprintsl("serve at port ",(argc>2?argv[2]:"4000"),", root: ", buf );
 
 	int retr = 0;
 	while (1) {
