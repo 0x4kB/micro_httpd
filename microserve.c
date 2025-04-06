@@ -17,6 +17,11 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 
 # define warning(_errno, _msg ) { ewrites( "WARN: " _msg "\n" ); }
 
+#if __BYTEORDER == __LITTLE_ENDIAN
+#define HTONS16(_x) ( ((_x&0xff) <<8)|((_x>>8)&0xff) )
+#else
+#define HTONS16(_x) (_x)
+#endif
 
 #define _MIMETYPES \
   _MIME ( UNKNOWN, unknown, "application/octet-stream", "\e" ) \
@@ -220,8 +225,8 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 
 int __attribute__((used))main(int argc, char **argv, char **env){
 
-	if ( argc != 2 || argv[1][0] == '-' ){
-		ewrites("Usage: microserve pathname\n");
+	if ( argc < 2 || argv[1][0] == '-' ){
+		ewrites("Usage: microserve pathname [port]\n");
 		exit(1);
 	}
 
@@ -243,11 +248,13 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 	}
 
 	// Set binding parameters
-	//int port = 4000;
+	int port = 0;
+	for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
+		port = port*10 + *p-'0';
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = 0xa00f; // port 4000, htons(4000)
+	address.sin_port = HTONS16(port); // 0xa00f; // port 4000, htons(4000)
 
 	int r;
 	ulong l = 1;
@@ -260,7 +267,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		err(r,"binding socket" );
 	}
 
-	eprintsl("serve at port 4000, root: ", buf );
+	eprintsl("serve at port ",argv[2],", root: ", buf );
 
 	int retr = 0;
 	while (1) {

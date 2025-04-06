@@ -9,11 +9,11 @@ Capable to serve directory listings and convert markdown files
 on the fly via 'lowdown'.
 
 
-Usage: micro_httpd serverroot
+Usage: micro_httpd serverroot port
 
-Port 4000 is hardcoded. 
+micro_https /var/html 4080
 
--> http://localhost:4000
+-> http://localhost:4080
 
 
 
