@@ -249,8 +249,11 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 
 	// Set binding parameters
 	int port = 0;
-	for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
-		port = port*10 + *p-'0';
+	if ( argc>2 )
+		for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
+			port = port*10 + *p-'0';
+
+	if ( !port ) port = 4000;
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
