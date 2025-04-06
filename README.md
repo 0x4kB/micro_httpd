@@ -30,6 +30,13 @@ the server is forking.
 The full source code including assembly routines is in source.c.
 
 
+Files within the serverroot shouldn't contain chars like &,|, and so on. 
+Else, this could get problematic with the argument to sh.
+This server understands only http get, so. just a warning.
+
+There might be other flaws. Else, this would be more than 4kB.
+
+
 -----
 
 
