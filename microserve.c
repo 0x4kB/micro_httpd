@@ -24,7 +24,7 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 #endif
 
 
-// format: enum,enum, 'index'' "typename"'\0'"extension" ...
+// format: enum,enum, 'index'[' '"typename"'\0']"extension\0" ...
 // typename is also scanned as extension
 #define _MIMETYPES \
   _MIME ( UNKNOWN, unknown,  "\1 octet-stream" ) \
@@ -34,9 +34,9 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
   _MIME ( javascript, application_x_javascript,  "\1 x-javascript\0.js" ) \
   _MIME ( xml, application_xml,  "\1.xml" ) \
   _MIME ( zip, application_zip,  "\1.zip" ) \
-  _MIME ( gz, image_gz,  "\1.gz" ) \
-  _MIME ( tar, image_tar,  "\1.tar" ) \
-  _MIME ( mp3, audio_mpeg3, "\3.mp3" ) \
+  _MIME ( gz, 	application_gz,  "\1.gz" ) \
+  _MIME ( tar, application_tar,  "\1.tar" ) \
+  _MIME ( mp3, audio_mpeg3, "\3.mpeg3\0.mp3" ) \
   _MIME ( bmp, image_bmp,  "\4.bmp" ) \
   _MIME ( gif, image_gif,  "\4.gif" ) \
   _MIME ( ico, image_ico,  "\4.ico" ) \
@@ -55,7 +55,7 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 const char* mimeclass_str =
         "application\0audio\0image\0video\0text";
 		  // 1         3      4      5      6
-
+// pos: (index-1) * 6
 
 #define _MIME(_s,_e,_ext) _ext,
 const char * const mimetypes_ext[] ={
