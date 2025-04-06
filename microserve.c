@@ -23,51 +23,74 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 #define HTONS16(_x) (_x)
 #endif
 
+
+// format: enum,enum, 'index'' "typename"'\0'"extension" ...
+// typename is also scanned as extension
 #define _MIMETYPES \
-  _MIME ( UNKNOWN, unknown, "application/octet-stream", "\e" ) \
-  _MIME ( msword, application_msword, "application/msword", ".doc" ) \
-  _MIME ( octet_stream, application_octet_stream, "application/octet-stream", ".bin\t.rar" ) \
-  _MIME ( pdf, application_pdf, "application/pdf", ".pdf" ) \
-  _MIME ( javascript, application_x_javascript, "application/x-javascript", ".js" ) \
-  _MIME ( xml, application_xml, "application/xml", ".xml" ) \
-  _MIME ( zip, application_zip, "application/zip", ".zip" ) \
-  _MIME ( gz, image_gz, "application/gz", ".gz" ) \
-  _MIME ( tar, image_tar, "application/tar", ".tar" ) \
-  _MIME ( mp3, audio_mpeg3, "audio/mpeg3", ".mp3" ) \
-  _MIME ( bmp, image_bmp, "image/bmp", ".bmp" ) \
-  _MIME ( gif, image_gif, "image/gif", ".gif" ) \
-  _MIME ( ico, image_ico, "image/ico", ".ico" ) \
-  _MIME ( jpeg, image_jpeg, "image/jpeg", ".jpeg\t.jpg" ) \
-  _MIME ( png, image_png, "image/png", ".png" ) \
-  _MIME ( tiff, image_tiff, "image/tiff", ".tiff" ) \
-  _MIME ( css, text_css, "text/css", ".css" ) \
-  _MIME ( html, text_html, "text/html", ".html\t.shtml\t.htm\t.php" ) \
-  _MIME ( markdown, text_markdown, "text/markdown", ".markdown\t.md" ) \
-  _MIME ( plain, text_plain, "text/plain", "README\t.nfo\t.txt" ) \
-  _MIME ( c, text_x_c, "text/x-c", ".c\t.h" ) \
-  _MIME ( avi, video_avi, "video/avi", ".avi" ) \
-  _MIME ( mpg, video_mpeg, "video/mpeg", ".mpeg\t.mpg" ) \
+  _MIME ( UNKNOWN, unknown,  "\1 octet-stream" ) \
+  _MIME ( msword, application_msword,  "\1 msword\0.doc" ) \
+  _MIME ( octet_stream, application_octet_stream,  "\1 octet-stream\0.bin\0.rar" ) \
+  _MIME ( pdf, application_pdf,  "\1.pdf" ) \
+  _MIME ( javascript, application_x_javascript,  "\1 x-javascript\0.js" ) \
+  _MIME ( xml, application_xml,  "\1.xml" ) \
+  _MIME ( zip, application_zip,  "\1.zip" ) \
+  _MIME ( gz, image_gz,  "\1.gz" ) \
+  _MIME ( tar, image_tar,  "\1.tar" ) \
+  _MIME ( mp3, audio_mpeg3, "\3.mp3" ) \
+  _MIME ( bmp, image_bmp,  "\4.bmp" ) \
+  _MIME ( gif, image_gif,  "\4.gif" ) \
+  _MIME ( ico, image_ico,  "\4.ico" ) \
+  _MIME ( jpeg, image_jpeg,  "\4.jpeg\0.jpg" ) \
+  _MIME ( png, image_png,  "\4.png" ) \
+  _MIME ( tiff, image_tiff,  "\4.tiff" ) \
+  _MIME ( css, text_css,  "\6.css" ) \
+  _MIME ( html, text_html,  "\6.html\0.shtml\0.htm\0.php" ) \
+  _MIME ( markdown, text_markdown,  "\6.markdown\0.md" ) \
+  _MIME ( plain, text_plain,  "\6 plain\0README\0.nfo\0.txt" ) \
+  _MIME ( c, text_x_c,  "\6 x-c\0.c\0.h" ) \
+  _MIME ( avi, video_avi,  "\5.avi" ) \
+  _MIME ( mpg, video_mpeg,  "\5.mpeg\0.mpg" ) \
 
 
-#define _MIME(_s,_e,_t,_ext) _t,
-const char * const mimetypes_str[] ={
-	_MIMETYPES
-};
-#undef _MIME
-#define _MIME(_s,_e,_t,_ext) "\n"_ext,
+const char* mimeclass_str =
+        "application\0audio\0image\0video\0text";
+		  // 1         3      4      5      6
+
+
+#define _MIME(_s,_e,_ext) _ext,
 const char * const mimetypes_ext[] ={
 	_MIMETYPES
 };
 #undef _MIME
 
-#define _MIME(_s,_e,_t,_ext) _s,_e=_s,
+#define _MIME(_s,_e,_ext) (char)(sizeof(_ext)-1),
+const char mimetypes_ext_len[] ={
+	_MIMETYPES
+};
+#undef _MIME
+
+#define _MIME(_s,_e,_ext) _s,_e=_s,
 #define _MIME_ENUM enum { _MIMETYPES ENDENUM }
 
 // return enum value of _mime ( png, image_png, markdown, text_markdown, .. )
 #define MIMETYPE(_type) ({ _MIME_ENUM; _type; })
 
 // return a pointer to the mimetype (no check of bounds)
-#define MIMETYPE_STR(_mimetype) ({ _MIME_ENUM; mimetypes_str[_mimetype]; })
+#define MIMESTR(_mimetype) ({ _MIME_ENUM; char buf[32]; mimetype_str( buf, _mimetype); buf; })
+
+
+// copy the mimetype str into buf
+static char* mimetype_str( char* buf, int mimetype ){
+	int index = *mimetypes_ext[mimetype];	
+
+	char *p = stpcpy(buf,mimeclass_str+(index-1)*6);
+	*p++ = '/';
+
+	stpcpy( p, (mimetypes_ext[mimetype] +2) );
+
+	return(buf);
+}
+
 
 
 // return the mimetype number
@@ -76,26 +99,30 @@ static int getmimetype(const char* path){
 
 	int type = 0;
 	for ( const char *const *m = mimetypes_ext; m - mimetypes_ext < sizeof(mimetypes_ext)/sizeof(char*); m++ ){
-		const char *p, *pext=(*m+(strlen(*m)));
+		const char *p, *pext=*m;
+		pext += mimetypes_ext_len[m - mimetypes_ext]; // point at the end
+																
 		do {
 			p = pend;
 			pext--;
 			while ( *p && (tolower(*p)==*pext) ){
 				 p--; pext--;
 			}
-			if ( *pext <= '\n' ){
+			if ( *pext < 040 ){ // match
+				//printvl( "mstr: ",({ char buf[32]; mimetype_str( buf, m - mimetypes_ext); buf; }) );
 				return( m - mimetypes_ext );
 			}
-			while ( *pext > '\n' ){
+			while ( *pext > 037 ){
 				pext--;
 			}
 
-		}
-		while ( *pext != '\n' );
+		} while ( *pext == 0 ); // > 0 = last
 	}
 
 	return(MIMETYPE(unknown));
 }
+
+
 
 
 
@@ -104,7 +131,7 @@ static void sendheader( char*status, char*title, int mimetype ){
 			"Server: micro_httpd " VERSION ".misc147\r\n" 
 			"Connection: close\r\n"
 			"Allow: GET\r\n"
-			"Content-Type: ",mimetypes_str[mimetype],"\r\n\r\n"
+			"Content-Type: ",MIMESTR(mimetype),"\r\n\r\n"
 			); 
 }
 	
