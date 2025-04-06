@@ -1,0 +1,27 @@
+
+Supporting files
+
+
+mimetypes.
+
+mime.types is from apache,
+mime.csv from some gist I cannot find just now.
+
+convert.pl: convert arg1 into mimetypes.h
+(old, would need to be changed)
+
+a format, close to mime.types, is needed:
+
+mimetype \s  ext ext2 ext3 ..
+
+comments are ignored, and all those vnd.xxx mimetypes.
+
+rfc's: (http 1.0/1.1)
+
+https://www.rfc-editor.org/rfc/rfc1945.txt
+https://www.rfc-editor.org/rfc/rfc2068.txt
+https://www.rfc-editor.org/rfc/rfc2310.txt
+https://www.rfc-editor.org/rfc/rfc7231.txt
+https://www.rfc-editor.org/rfc/rfc9110.txt
+https://www.rfc-editor.org/rfc/rfc9112.txt
+
