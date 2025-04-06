@@ -30,6 +30,14 @@ the server is forking.
 The full source code including assembly routines is in source.c.
 
 
+-----
+
+
+[https://github.com/kristapsdz/lowdown](https://github.com/kristapsdz/lowdown)
+
+
+Statically linked binary: 
+[https://github.com/michael105/static-bin](https://github.com/michael105/static-bin)
 
 
 
