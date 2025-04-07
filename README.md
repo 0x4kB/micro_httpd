@@ -8,6 +8,8 @@ A minimalistic http 1.0 webserver, linked static 4kB.
 Capable to serve directory listings and convert markdown files
 on the fly via 'lowdown'.
 
+Cookie free, optimized for http/1.0
+
 
 Usage: micro_httpd serverroot [port] [restrict to uid]
 
@@ -16,6 +18,7 @@ micro_https /var/html 4080
 -> http://localhost:4080
 
 
+[port] defaults to 4000
 [restrict to uid] is optional, if supplied, only files with that owner's uid are served.
 
 
@@ -33,7 +36,9 @@ The full source code including assembly routines is in source.c.
 
 Files within the serverroot shouldn't contain chars like &,|, and so on. 
 Else, this could get problematic with the argument to sh.
-This server understands only http get, so. just a warning.
+This server understands only http get, and tests the paths via a stat
+for existence.
+So just a notice.
 
 There might be other flaws. Else, this would be more than 4kB.
 

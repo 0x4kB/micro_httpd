@@ -328,8 +328,8 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		exit(1);
 	}
 
-
-	char _buf[BUFSIZE+BUFOFFS];
+//	char _buf[BUFSIZE+BUFOFFS];
+	char *_buf = (char*)mmap( 0, (BUFSIZE+BUFOFFS), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0 );
 	char *buf = _buf + BUFOFFS;
 	char *pos = stpcpy( buf, argv[1] );
 	//if ( *(pos-1) != '/' )
