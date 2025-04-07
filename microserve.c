@@ -228,8 +228,10 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	} while ( ERRNO(r) == EINTR || ERRNO(r) == EAGAIN );
 
 	if ( r<0 || r >= (BUFSIZE-(pos-buf)) ) // might be junk, or something else happened
-			send_error("400", "Bad");
+			send_error("413", "Bad");
 
+	// parsing is little bit nasty. anyways. assume, the clients will adapt.
+	// It is their fault!
 	if ( ((*(uint*)pos) & 0xffffff) != *(uint*)"GET" ){ // little endian
 		send_error("405","Unsupported" );
 	}
@@ -239,8 +241,8 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 
 	while ( (*(++p) > 32) && (p-path < r) );
 
-	if ( !*p || *p>32 )
-			send_error("400","Bad Request");
+	if ( !*p || *p>32 || (p-path==r ) )
+			send_error("418","Your fault");
 	*p = 0;
 	int pathlen = p-pos-4;
 
@@ -299,7 +301,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 		if (pathlen>1) prints( "<a href=\"",pos,"/..\">Parent .. &uarr;</a><br/>\n" ); 
 
 		*(uint*)buf = *(uint*)"ls  ";
-		char *p = pend;// pend+=plen;
+
 		pend = stpcpy(pend, " | sed -E 's;(.*);<a href=\\\""); 
 		memcpy(pend, pos+1, pathlen-1 );
 		strcpy(pend+pathlen-1, "/\\1\\\">\\1</a><br/>;';" 
