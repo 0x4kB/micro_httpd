@@ -3,19 +3,20 @@
 
 
 
-A minimalistic http 1.0 webserver, statically linked 3864Bytes.
+A minimalistic http 1.0 webserver, linked static 4kB.
 
 Capable to serve directory listings and convert markdown files
 on the fly via 'lowdown'.
 
 
-Usage: micro_httpd serverroot port
+Usage: micro_httpd serverroot [port] [restrict to uid]
 
 micro_https /var/html 4080
 
 -> http://localhost:4080
 
 
+[restrict to uid] is optional, if supplied, only files with that owner's uid are served.
 
 
 To create directory listings and convert markdown files,

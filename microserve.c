@@ -219,7 +219,7 @@ static void send_error( char*status, char*title ){
 
 #define BUFOFFS 4
 
-static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos ){
+static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos, int ruid ){
 	
 	int r;
 	do {
@@ -266,6 +266,9 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	if ( stat( path, &st ) != 0 ){ 
 		send_error("404","Not found");
 	}
+
+	if ( ruid>=0 && st.st_uid != ruid )
+		send_error("403","Forbidden");
 
 	int mimetype = getmimetype(path);
 	
@@ -321,7 +324,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 int __attribute__((used))main(int argc, char **argv, char **env){
 
 	if ( argc < 2 || argv[1][0] == '-' ){
-		ewrites("Usage: microserve pathname [port]\n");
+		ewrites("Usage: micro_httpd pathname [port] [restrict uid]\n");
 		exit(1);
 	}
 
@@ -336,6 +339,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 	socklen_t addrlen;
 	struct sockaddr_in address;
 	int sockfd;
+	int ruid=-1;
 
 		// Check for successful socket initialization
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) <= 0){
@@ -347,6 +351,13 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 	if ( argc>2 )
 		for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
 			port = port*10 + *p-'0';
+
+	if ( argc>2 ){
+		ruid=0;
+		for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
+			ruid = ruid*10 + *p-'0';
+	}
+
 
 	if ( !port ) port = 4000;
 
@@ -400,7 +411,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 			close(sockfd);
 			close(1);
 			dup(rfd);
-			http_handler(rfd,_buf, pos);
+			http_handler(rfd,_buf, pos,ruid);
 		}
 		// If parent process, close the response socket
 		else {
