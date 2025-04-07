@@ -1,12 +1,11 @@
 asm(".MARK_MICROSERVER:");
 
-// LICENSE BSD 3clause
+// LICENSE CC-BY-SA 4.0
 // 2025 misc147, www.github.com/michael105
 
-#define VERSION "0.1.rc2"
+#define VERSION "0.1.rc3"
 
 #define BUFSIZE 4000
-
 
 //# define err(_errno, _msg ) { ewrites( "ERR: " _msg "\n" ); exit(_errno); }
 
@@ -144,7 +143,7 @@ const char mimetypes_ext_len[] ={
 #define MIMETYPE(_type) ({ _MIME_ENUM; _type; })
 
 // return a pointer to a mimetype str (no check of bounds)
-#define MIMESTR(_mimetype) ({ _MIME_ENUM; char buf[32]; mimetype_str( buf, _mimetype); buf; })
+#define MIMESTR(_mimetype) ({ _MIME_ENUM; char _buf[32]; mimetype_str( _buf, _mimetype); _buf; })
 
 
 // copy the mimetype str into buf
@@ -194,7 +193,7 @@ static int getmimetype(const char* path){
 
 
 
-static void sendheader( char*status, char*title, int mimetype ){
+static void send_header( char*status, char*title, int mimetype ){
 	prints( "HTTP/1.0 ", status, " ",title, "\r\n"
 			"Server: micro_httpd " VERSION ".misc147\r\n" 
 			"Connection: close\r\n"
@@ -211,11 +210,11 @@ static void send_htmlhead(const char* status, const char* title ){
 static void send_error( char*status, char*title ){
 	eprints( status, ": ", title, "\n");
 	// insert some delay for bad requests. stripped that.
-	// also logging of ip's. 
-	// usleep( 5000000 ); 
-	sendheader( status, title, MIMETYPE(html) );
+	// usleep( 2000000 ); 
+	send_header( status, title, MIMETYPE(html) );
 	send_htmlhead(status,title);
 	writes("</body></html>\n" );
+	// usleep( 5000000 ); 
 
 	exit(0);
 }
@@ -239,6 +238,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 		send_error("405","Unsupported" );
 	}
 
+	// Got a new customer
 	char *path = pos+4;
 	char *p = path;
 
@@ -261,7 +261,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 
 	for ( char *c = path; *c; c++ )
 		if ( *c=='.' && *(c+1) == '.' )
-			send_error("418","Bad Path ..");
+			send_error("418","Bad Path .."); 
 
 	char *pend = stpcpy( pos, path );
 	path = buf+4;
@@ -296,7 +296,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 			send_error("423", "Not accessible" );
 	}
 
-	sendheader( "200", "Ok", mimetype );
+	send_header( "200", "Ok", mimetype );
 
 	if ( S_ISDIR( st.st_mode ) ){
 		//int plen = pend-pos;
@@ -334,8 +334,8 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		exit(1);
 	}
 
-//	char _buf[BUFSIZE+BUFOFFS];
-	char *_buf = (char*)mmap( 0, (BUFSIZE+BUFOFFS), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0 );
+	char _buf[BUFSIZE+BUFOFFS];
+	//char *_buf = (char*)mmap( 0, (BUFSIZE+BUFOFFS), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0 );
 	char *buf = _buf + BUFOFFS;
 	char *pos = stpcpy( buf, argv[1] );
 	//if ( *(pos-1) != '/' )
@@ -358,9 +358,9 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
 			port = port*10 + *p-'0';
 
-	if ( argc>2 ){
+	if ( argc>3 ){
 		ruid=0;
-		for ( const char *p = argv[2]; *p>='0' && *p<='9'; p++ )
+		for ( const char *p = argv[3]; *p>='0' && *p<='9'; p++ )
 			ruid = ruid*10 + *p-'0';
 	}
 
