@@ -292,17 +292,17 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	sendheader( "200", "Ok", mimetype );
 
 	if ( S_ISDIR( st.st_mode ) ){
-		//int plen = pend-pos;
+		int plen = pend-pos;
 
 		send_htmlhead( "Directory index", pos );
 
-		if (pathlen>1) prints( "<a href=\"",pos,"/..\">Parent .. &uarr;</a><br/>\n" ); 
+		if (plen>1) prints( "<a href=\"",pos,"/..\">Parent .. &uarr;</a><br/>\n" ); 
 
 		*(uint*)buf = *(uint*)"ls  ";
 		char *p = pend;// pend+=plen;
 		pend = stpcpy(pend, " | sed -E 's;(.*);<a href=\\\""); 
-		memcpy(pend, pos+1, pathlen-1 );
-		strcpy(pend+pathlen-1, "/\\1\\\">\\1</a><br/>;';" 
+		memcpy(pend, pos+1, plen-1 );
+		strcpy(pend+plen-1, "/\\1\\\">\\1</a><br/>;';" 
 				"echo '</body></html>'");
 
 		//eprints( "dir: ", (buf), "\n" );
