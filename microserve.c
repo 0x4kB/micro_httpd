@@ -45,7 +45,6 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
   _MIME ( json, application_json, "\1.json" )  /* JSON format */ \
   _MIME ( mp3, audio_mpeg3, "\3.mpeg3\0.mp3" ) \
   _MIME ( mpg, video_mpeg,  "\5.mpeg\0.mpg" ) \
-  _MIME ( msword, application_msword,  "\1 msword\0.doc" ) \
   _MIME ( octet_stream, application_octet_stream,  "\1 octet-stream\0.bin\0.rar" ) \
   _MIME ( pdf, application_pdf,  "\1.pdf" ) \
   _MIME ( plain, text_plain,  "\6.plain\0README\0.nfo\0.txt\0.asc" ) \
@@ -88,6 +87,7 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
    _MIME( json, application_json, "\1.json" )  /* JSON format */ \
    _MIME( midi, audio_midi, "\3.midi\0.mid" )  /* Musical Instrument Digital Interface (MIDI) */ \
    _MIME( mpeg, video_mpeg, "\5.mpeg" )  /* MPEG Video */ \
+  _MIME ( msword, application_msword,  "\1 msword\0.doc" ) \
    _MIME( oga, audio_ogg, "\3.ogg\0.ogx\0oga" )  /* OGG audio */ \
    _MIME( ogv, video_ogg, "\5 ogg.ogv" )  /* OGG video */ \
    _MIME( pdf, application_pdf, "\1.pdf" )  /* Adobe Portable Document Format (PDF) */ \
@@ -384,23 +384,18 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 
 	eprintsl("serve at port ",(argc>2?argv[2]:"4000"),", root: ", buf );
 
-	int retr = 0;
-	while (1) {
-		// Check for incoming client connections
-		//ewritesl("listen");
-		if ( (r=listen(sockfd, 10)) < 0) {
-			warning(r,"listen");
-			if ( ++retr > 10 )
-				err(EFAULT,"abort");
-			usleep(100);
-			continue;
-		}
-		retr=0;
+	
+	//ewritesl("listen");
+	if ( (r=listen(sockfd, 10)) < 0)
+		err( r, "listen" );
 
+	do {
 		//ewritesl("accept");
-		if ((rfd = accept(sockfd, (struct sockaddr *) &address, &addrlen)) < 0){
+		uint retr = 0;
+		while ((rfd = accept(sockfd, (struct sockaddr *) &address, &addrlen)) < 0){
 			warning(rfd,"accept");
-			continue;
+			retr = (retr+1) & 0xf;
+			usleep(100000*retr*retr); // max 15*15*1/10 seconds
 		}
 
 		ewrites("Connect\n");
@@ -423,7 +418,7 @@ int __attribute__((used))main(int argc, char **argv, char **env){
 		else {
 			close(rfd);
 		}
-	}
+	} while(1);
 
 	__builtin_unreachable();
 }
