@@ -239,13 +239,15 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	char *path = pos+4;
 	char *p = path;
 
-	while ( (*(++p) > 32) && (p-path < r) );
+	// no encoded chars. or umlauts. or.. 
+	while ( (*(++p) > 32) && (*p<127) && (p-path < r) );
 
 	if ( !*p || *p>32 || (p-path==r ) )
-			send_error("418","Your fault");
+			send_error("400","Bad path");
 	*p = 0;
 	int pathlen = p-pos-4;
 
+	eprintsl( path, " == ",buf+4 );
 
 	// Somehow unecessary checks. This should be used locally only. Anyways.
 	if ( pathlen > PATH_MAX - (pos-buf) )
@@ -256,10 +258,10 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 
 	for ( char *c = path; *c; c++ )
 		if ( *c=='.' && *(c+1) == '.' )
-			send_error("400","Bad Path ..");
+			send_error("418","Bad Path ..");
 
 	char *pend = stpcpy( pos, path );
-	path = pos;
+	path = buf+4;
 
 	eprints("Access: ",path,"\n");
 
