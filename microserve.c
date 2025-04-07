@@ -3,7 +3,7 @@ asm(".MARK_MICROSERVER:");
 // LICENSE BSD 3clause
 // 2025 misc147, www.github.com/michael105
 
-#define VERSION "0.1.rc"
+#define VERSION "0.1.rc2"
 
 #define BUFSIZE 4000
 
@@ -26,9 +26,11 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 
 // format: enum,enum, 'index'[' '"typename"'\0']"extension\0" ...
 // typename is also scanned as extension
-#ifndef BLOAT
+#ifndef IGNORESIZE
 #define _MIMETYPES \
   _MIME ( UNKNOWN, unknown,  "\1 octet-stream" ) \
+  _MIME ( markdown, text_markdown,  "\6.markdown\0.md\0.mdown\0.markdn" ) \
+  _MIME ( richtext, text_richtext,  "\6.richtext\0.rtx\0.rst" ) \
   _MIME ( avi, video_avi,  "\5.avi" ) \
   _MIME ( bmp, image_bmp,  "\4.bmp" ) \
   _MIME ( c, text_x_c,  "\6 x-c\0.c\0.h" ) \
@@ -42,13 +44,12 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
   _MIME ( javascript, application_x_javascript,  "\1 x-javascript\0.js" ) \
   _MIME ( jpeg, image_jpeg,  "\4.jpeg\0.jpg" ) \
   _MIME ( json, application_json, "\1.json" )  /* JSON format */ \
-  _MIME ( markdown, text_markdown,  "\6.markdown\0.md" ) \
   _MIME ( mp3, audio_mpeg3, "\3.mpeg3\0.mp3" ) \
   _MIME ( mpg, video_mpeg,  "\5.mpeg\0.mpg" ) \
   _MIME ( msword, application_msword,  "\1 msword\0.doc" ) \
   _MIME ( octet_stream, application_octet_stream,  "\1 octet-stream\0.bin\0.rar" ) \
   _MIME ( pdf, application_pdf,  "\1.pdf" ) \
-  _MIME ( plain, text_plain,  "\6 plain\0README\0.nfo\0.txt" ) \
+  _MIME ( plain, text_plain,  "\6.plain\0README\0.nfo\0.txt\0.asc" ) \
   _MIME ( png, image_png,  "\4.png" ) \
   _MIME ( sh, application_x_sh, "\1 x-sh\0.sh" )  /* Bourne shell script */ \
   _MIME ( tar, application_x_tar, "\1 x-tar\0.tar" )  /* Tape Archive (TAR) */ \
@@ -64,6 +65,7 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 
 #define _MIMETYPES \
   _MIME ( UNKNOWN, unknown,  "\1 octet-stream" ) \
+  _MIME ( markdown, text_markdown,  "\6.markdown\0.md" ) /* unspecified */ \
    _MIME( aac, audio_aac, "\3.aac" )  /* AAC audio file */ \
    _MIME( abw, application_x_abiword, "\1 x-abiword\0.abw" )  /* AbiWord document */ \
    _MIME( arc, application_octet_stream, "\1.arc\0.bin" )  /* Archive document, any kind*/ \
@@ -85,7 +87,6 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
    _MIME( jpg, image_jpeg, "\4.jpeg\0.jpg" )  /* JPEG images */ \
    _MIME( js, application_javascript, "\1 javascript\0.js" )  /* JavaScript (ECMAScript) */ \
    _MIME( json, application_json, "\1.json" )  /* JSON format */ \
-  _MIME ( markdown, text_markdown,  "\6.markdown\0.md" ) \
    _MIME( midi, audio_midi, "\3.midi\0.mid" )  /* Musical Instrument Digital Interface (MIDI) */ \
    _MIME( mpeg, video_mpeg, "\5.mpeg" )  /* MPEG Video */ \
    _MIME( oga, audio_ogg, "\3.ogg\0.ogx\0oga" )  /* OGG audio */ \
