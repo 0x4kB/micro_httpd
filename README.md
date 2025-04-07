@@ -10,6 +10,8 @@ on the fly via 'lowdown'.
 
 Cookie free, optimized for http/1.0
 
+Not intended for the net.
+
 
 Usage: micro_httpd serverroot [port] [restrict to uid]
 

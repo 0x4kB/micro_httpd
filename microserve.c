@@ -210,6 +210,9 @@ static void send_htmlhead(const char* status, const char* title ){
 
 static void send_error( char*status, char*title ){
 	eprints( status, ": ", title, "\n");
+	// insert some delay for bad requests. stripped that.
+	// also logging of ip's. 
+	// usleep( 5000000 ); 
 	sendheader( status, title, MIMETYPE(html) );
 	send_htmlhead(status,title);
 	writes("</body></html>\n" );
