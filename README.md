@@ -55,5 +55,5 @@ Statically linked binary:
 
 
 
-2025, misc147, AGPL / CC-BY-SA 4.0
+2025 misc147 (www.github.com/michael105), CC-BY-SA 4.0
 

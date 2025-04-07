@@ -227,27 +227,26 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 		r= read(rfd, pos, (BUFSIZE-(pos-buf)) );
 	} while ( ERRNO(r) == EINTR || ERRNO(r) == EAGAIN );
 
-	if ( r<0 || r == (BUFSIZE-(pos-buf)) ) // might be junk, or something else happened
+	if ( r<0 || r >= (BUFSIZE-(pos-buf)) ) // might be junk, or something else happened
 			send_error("400", "Bad");
 
-	//eprints( pos );
-	char *p;
-	
-	// fuzzy parsing
-	char* method = strtok_r( pos, " \t\n\r", &p );
-	char* path = strtok_r( 0, " \t\n\r", &p );
-	char* prot = strtok_r( 0, " \t\n\r", &p );
-
-
-	// ignore the rest. 
-
-	//if ( strncasecmp( "get", method, 3 ) )
-	if ( strcmp( "GET", method ) )
+	if ( ((*(uint*)pos) & 0xffffff) != *(uint*)"GET" ){ // little endian
 		send_error("405","Unsupported" );
+	}
+
+	char *path = pos+4;
+	char *p = path;
+
+	while ( (*(++p) > 32) && (p-path < r) );
+
+	if ( !*p || *p>32 )
+			send_error("400","Bad Request");
+	*p = 0;
+	int pathlen = p-pos;
 
 
 	// Somehow unecessary checks. This should be used locally only. Anyways.
-	if ( prot-path > PATH_MAX - (pos-buf) )
+	if ( pathlen > PATH_MAX - (pos-buf) )
 		send_error("400","Bad Request");
 
 	if ( path[0] != '/' )
@@ -293,17 +292,17 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	sendheader( "200", "Ok", mimetype );
 
 	if ( S_ISDIR( st.st_mode ) ){
-		int plen = pend-pos;
+		//int plen = pend-pos;
 
 		send_htmlhead( "Directory index", pos );
 
-		if (plen>1) prints( "<a href=\"",pos,"/..\">Parent .. &uarr;</a><br/>\n" ); 
+		if (pathlen>1) prints( "<a href=\"",pos,"/..\">Parent .. &uarr;</a><br/>\n" ); 
 
 		*(uint*)buf = *(uint*)"ls  ";
 		char *p = pend;// pend+=plen;
 		pend = stpcpy(pend, " | sed -E 's;(.*);<a href=\\\""); 
-		memcpy(pend, pos+1, plen-1 );
-		strcpy(pend+plen-1, "/\\1\\\">\\1</a><br/>;';" 
+		memcpy(pend, pos+1, pathlen-1 );
+		strcpy(pend+pathlen-1, "/\\1\\\">\\1</a><br/>;';" 
 				"echo '</body></html>'");
 
 		//eprints( "dir: ", (buf), "\n" );
