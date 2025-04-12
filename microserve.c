@@ -3,8 +3,10 @@ asm(".MARK_MICROSERVER:");
 // LICENSE CC-BY-SA 4.0
 // 2025 misc147, www.github.com/michael105
 
-#define VERSION "0.1.rc3"
+#define VERSION "0.1.rc4"
 
+// path to sh. needed for directory listings and markdown converting
+#define SHPATH "/bin/sh"
 #define BUFSIZE 4000
 
 #include "mimetypes.h"
@@ -24,11 +26,11 @@ void __attribute__((noreturn)) err( int err, const char* msg ){
 
 
 
-static void send_header( char*status, char*title, int mimetype ){
-	prints( "HTTP/1.0 ", status, " ",title, "\r\n"
+static void send_header( const char* status, const char* phrase, int mimetype ){
+	prints( "HTTP/1.0 ", status, " ",phrase, "\r\n"
 			"Server: micro_httpd " VERSION ".misc147\r\n" 
 			"Connection: close\r\n"
-			"Allow: GET\r\n"
+			"Public: GET\r\n"
 			"Content-Type: ",MIMESTR(mimetype),"\r\n\r\n"
 			); 
 }
@@ -147,7 +149,7 @@ static void __attribute__((noreturn))http_handler( int rfd, char *buf, char *pos
 	} 	
 
 	if ( ffd == 0 ){
-		execve( "/bin/sh", args, 0 );
+		execve( SHPATH, args, 0 );
 	} else {
 		sendfile(1, ffd, 0, st.st_size );
 	}
