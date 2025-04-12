@@ -43,9 +43,9 @@ Else, this could get problematic with directory listings and the arguments of sh
 This server understands http get only, and tests the paths via a stat
 for existence.
 So just a notice. Interestingly, I wasn't able to
-break that myself. But didn't try to hard.
+break that myself. But didn't try too hard.
 
-There might be other weaknesses. Else, this would be more than 4kB.
+There might be other weaknesses. Otherwise this would be larger than 4kB.
 
 
 -----
