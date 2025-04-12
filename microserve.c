@@ -3,7 +3,7 @@ asm(".MARK_MICROSERVER:");
 // LICENSE CC-BY-SA 4.0
 // 2025 misc147, www.github.com/michael105
 
-#define VERSION "0.1.rc4"
+#define VERSION "1.0.rc1"
 
 // path to sh. needed for directory listings and markdown converting
 #define SHPATH "/bin/sh"
